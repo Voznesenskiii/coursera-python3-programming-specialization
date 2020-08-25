@@ -1,0 +1,57 @@
+import requests_with_caching as rwc
+def get_movies_from_tastedive (movie):
+    url = "https://tastedive.com/api/similar"
+    params = {
+        "q": movie,
+        "type": "movies",
+        "limit": 5
+    }
+    res = rwc.get(url, params = params)
+    print(res.url)
+    return res.json()
+
+def extract_movie_titles(info):
+    lst = []
+    for movie in info['Similar']['Results']:
+        if movie['Name'] not in lst:
+            lst.append(movie['Name'])
+    return lst
+
+def get_related_titles(movies):
+    lst = []
+    for movie in movies:
+        titles = extract_movie_titles(get_movies_from_tastedive(movie))
+        for title in titles:
+            if title not in lst:
+                lst.append(title)
+    return lst   
+
+def get_movie_data(movie):
+    url = "http://www.omdbapi.com/"
+    params = {
+        "t": movie,
+        "r": "json"
+    }
+    res = rwc.get(url, params = params)
+    print(res.url)
+    return res.json()
+
+def get_movie_rating(info):
+    rates = info['Ratings']
+    res = 0
+    for rate in rates:
+        if rate['Source'] == 'Rotten Tomatoes':
+            res = int(rate['Value'][:-1])
+    return res
+
+def get_sorted_recommendations(movies):
+    titles = get_related_titles(movies)
+    res = []
+    for title in titles:
+        rate = get_movie_rating(get_movie_data(title))
+        res.append((rate, title))
+    res = sorted(res, reverse = True)
+    return [x[1] for x in res]
+# some invocations that we use in the automated tests; uncomment these if you are getting errors and want better error messages
+get_sorted_recommendations(["Bridesmaids", "Sherlock Holmes"])
+

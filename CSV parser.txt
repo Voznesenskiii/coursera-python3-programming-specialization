@@ -1,0 +1,15 @@
+f = open("SP500.txt", "r")
+lines = f.readlines()
+mean_SP = 0
+max_interest = 0
+c = 0
+s = 0
+for l in lines[1:]:
+    w = l.split(",")
+    d = w[0].split("/")
+    if (int(d[0]) >=6 and int(d[2])==2016) or (int(d[0]) <=5 and int(d[2])==2017):
+        c+=1
+        s+=float(w[1])
+        if float(w[5]) > max_interest:
+            max_interest = float(w[5])
+mean_SP = s/c
